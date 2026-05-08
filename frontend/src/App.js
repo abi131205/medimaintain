@@ -3,36 +3,65 @@ import axios from "axios";
 import "./App.css";
 import Login from "./pages/Login";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 function App() {
+
   const [equipment, setEquipment] = useState([]);
+
   const [name, setName] = useState("");
   const [status, setStatus] = useState("Active");
   const [date, setDate] = useState("");
-  const [editId, setEditId] = useState(null);
-  const [search, setSearch] = useState("");
 
-  // 🔐 LOGIN STATE
+  const [location, setLocation] = useState("");
+  const [department, setDepartment] = useState("");
+  const [assetTag, setAssetTag] = useState("");
+
+  const [editId, setEditId] = useState(null);
+
+  // 🔍 Search & Filter
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("All");
+
   const [isLoggedIn, setIsLoggedIn] = useState(
     !!localStorage.getItem("token")
   );
 
- const API = "http://localhost:5000/api/equipment";
+  // 👤 Current User
+  const user = JSON.parse(localStorage.getItem("user"));
 
-  // 🔑 AUTH HEADER
+  const API = "http://localhost:5000/api/equipment";
+
+  // 🔐 AUTH HEADER
   const getAuthHeader = () => ({
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },
   });
 
-  // 🔐 FETCH
+  // 📥 FETCH EQUIPMENT
   const fetchEquipment = useCallback(async () => {
+
     try {
-      const res = await axios.get(API, getAuthHeader());
+
+      const res = await axios.get(
+        API,
+        getAuthHeader()
+      );
+
       setEquipment(res.data);
+
     } catch (err) {
+
       console.log(err);
+
+      toast.error(
+        err.response?.data?.message ||
+        "Failed to fetch equipment"
+      );
     }
+
   }, []);
 
   useEffect(() => {
@@ -41,312 +70,601 @@ function App() {
 
   // ➕ ADD / ✏️ UPDATE
   const handleSave = async () => {
-    if (!name) return alert("Enter equipment name");
+
+    if (!name) {
+      return toast.error(
+        "Enter equipment name"
+      );
+    }
 
     try {
+
       const data = {
-        equipmentName: name,
+        name,
         status,
-        nextMaintenanceDate: date,
+        lastServiced: date,
+        location,
+        department,
+        assetTag,
       };
 
+      // ✏️ UPDATE
       if (editId) {
-        await axios.put(`${API}/${editId}`, data, getAuthHeader());
+
+        await axios.put(
+          `${API}/${editId}`,
+          data,
+          getAuthHeader()
+        );
+
+        toast.success(
+          "Equipment updated successfully"
+        );
+
         setEditId(null);
+
       } else {
-        await axios.post(API, data, getAuthHeader());
+
+        // ➕ ADD
+        await axios.post(
+          API,
+          data,
+          getAuthHeader()
+        );
+
+        toast.success(
+          "Equipment added successfully"
+        );
       }
 
+      // 🔄 RESET
       setName("");
       setStatus("Active");
       setDate("");
+      setLocation("");
+      setDepartment("");
+      setAssetTag("");
+
       fetchEquipment();
+
     } catch (err) {
-      alert(err.response?.data?.message || "Error");
+
+      toast.error(
+        err.response?.data?.message ||
+        "Error"
+      );
     }
   };
 
   // ❌ DELETE
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete?")) return;
 
-    await axios.delete(`${API}/${id}`, getAuthHeader());
-    fetchEquipment();
+    if (!window.confirm(
+      "Delete equipment?"
+    )) return;
+
+    try {
+
+      await axios.delete(
+        `${API}/${id}`,
+        getAuthHeader()
+      );
+
+      toast.success(
+        "Equipment deleted"
+      );
+
+      fetchEquipment();
+
+    } catch (err) {
+
+      toast.error("Delete failed");
+    }
   };
 
   // ✏️ EDIT
   const handleEdit = (item) => {
-    setName(item.equipmentName);
+
+    setName(item.name);
+
     setStatus(item.status);
-    setDate(item.nextMaintenanceDate?.split("T")[0] || "");
+
+    setDate(
+      item.lastServiced?.split("T")[0] || ""
+    );
+
+    setLocation(item.location || "");
+
+    setDepartment(item.department || "");
+
+    setAssetTag(item.assetTag || "");
+
     setEditId(item._id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
-  // 🔴 Overdue
+  // 🔴 OVERDUE
   const isOverdue = (date) => {
+
     if (!date) return false;
+
     return new Date(date) < new Date();
   };
 
-  // 🟠 Due Soon
+  // 🟠 DUE SOON
   const isDueSoon = (date) => {
+
     if (!date) return false;
 
     const today = new Date();
-    const maintenanceDate = new Date(date);
 
-    const diffTime = maintenanceDate - today;
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    const maintenanceDate =
+      new Date(date);
 
-    return diffDays > 0 && diffDays <= 3;
+    const diffTime =
+      maintenanceDate - today;
+
+    const diffDays =
+      diffTime / (1000 * 60 * 60 * 24);
+
+    return diffDays > 0 &&
+      diffDays <= 3;
   };
 
-  // 📊 Dashboard Counts
-  const activeCount = equipment.filter(
-    (e) => e.status === "Active"
-  ).length;
+  // 📊 COUNTS
+  const activeCount =
+    equipment.filter(
+      (e) => e.status === "Active"
+    ).length;
 
-  const maintenanceCount = equipment.filter(
-    (e) => e.status === "Under Maintenance"
-  ).length;
+  const maintenanceCount =
+    equipment.filter(
+      (e) =>
+        e.status ===
+        "Under Maintenance"
+    ).length;
 
-  const outOfServiceCount = equipment.filter(
-    (e) => e.status === "Out of Service"
-  ).length;
+  const outOfServiceCount =
+    equipment.filter(
+      (e) =>
+        e.status ===
+        "Out of Service"
+    ).length;
 
-  const overdueCount = equipment.filter((e) =>
-    isOverdue(e.nextMaintenanceDate)
-  ).length;
+  const overdueCount =
+    equipment.filter((e) =>
+      isOverdue(e.lastServiced)
+    ).length;
 
-  const dueSoonCount = equipment.filter((e) =>
-    isDueSoon(e.nextMaintenanceDate)
-  ).length;
+  const dueSoonCount =
+    equipment.filter((e) =>
+      isDueSoon(e.lastServiced)
+    ).length;
+
+  // 🔍 FILTERED EQUIPMENT
+  const filteredEquipment =
+    equipment.filter((item) => {
+
+      const matchesSearch =
+
+        item.name
+          ?.toLowerCase()
+          .includes(
+            search.toLowerCase()
+          ) ||
+
+        item.department
+          ?.toLowerCase()
+          .includes(
+            search.toLowerCase()
+          ) ||
+
+        item.assetTag
+          ?.toLowerCase()
+          .includes(
+            search.toLowerCase()
+          );
+
+      const matchesStatus =
+
+        filterStatus === "All" ||
+
+        item.status === filterStatus;
+
+      return (
+        matchesSearch &&
+        matchesStatus
+      );
+    });
 
   // 🔐 LOGIN CHECK
   if (!isLoggedIn) {
-    return <Login setIsLoggedIn={setIsLoggedIn} />;
+    return (
+      <Login
+        setIsLoggedIn={
+          setIsLoggedIn
+        }
+      />
+    );
   }
 
   return (
+
     <div className="min-h-screen bg-gray-100">
 
-      {/* 🔝 Navbar */}
-      <nav className="bg-white shadow-md fixed top-0 left-0 w-full z-50 h-28 flex items-center">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+      {/* 🔝 NAVBAR */}
+      <nav className="bg-white shadow-md fixed top-0 left-0 w-full z-50 h-24 flex items-center">
+
+        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center w-full">
+
           <h1 className="text-3xl font-bold text-green-600">
             MediMaintain 🏥
           </h1>
 
-          <button
-            className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg shadow transition"
-            onClick={() => {
-              localStorage.removeItem("token");
-              setIsLoggedIn(false);
-            }}
-          >
-            Logout
-          </button>
+          <div className="flex items-center">
+
+            <p className="mr-4 font-semibold">
+              Role: {user?.role}
+            </p>
+
+            <button
+              className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg transition"
+              onClick={() => {
+
+                localStorage.removeItem(
+                  "token"
+                );
+
+                localStorage.removeItem(
+                  "user"
+                );
+
+                setIsLoggedIn(false);
+              }}
+            >
+              Logout
+            </button>
+
+          </div>
+
         </div>
+
       </nav>
 
-      {/* 📦 Main Layout */}
-      <div className="max-w-7xl mx-auto px-6 pt-44 pb-8 grid lg:grid-cols-2 gap-8 items-start">
+      {/* MAIN */}
+      <div className="max-w-7xl mx-auto px-6 pt-36 pb-8 grid lg:grid-cols-2 gap-8">
 
-        {/* LEFT PANEL */}
+        {/* LEFT */}
         <div>
 
-          {/* 📊 Dashboard */}
+          {/* 📊 DASHBOARD */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 
-            <div className="bg-white shadow-md rounded-2xl p-4 text-center">
-              <p className="text-gray-500">Total</p>
-              <h2 className="text-2xl font-bold">{equipment.length}</h2>
+            <div className="bg-white shadow rounded-2xl p-4 text-center">
+              <p>Total</p>
+              <h2 className="text-2xl font-bold">
+                {equipment.length}
+              </h2>
             </div>
 
-            <div className="bg-green-100 text-green-700 shadow-md rounded-2xl p-4 text-center">
+            <div className="bg-green-100 shadow rounded-2xl p-4 text-center">
               <p>Active</p>
-              <h2 className="text-2xl font-bold">{activeCount}</h2>
+              <h2 className="text-2xl font-bold">
+                {activeCount}
+              </h2>
             </div>
 
-            <div className="bg-yellow-100 text-yellow-700 shadow-md rounded-2xl p-4 text-center">
+            <div className="bg-yellow-100 shadow rounded-2xl p-4 text-center">
               <p>Maintenance</p>
-              <h2 className="text-2xl font-bold">{maintenanceCount}</h2>
+              <h2 className="text-2xl font-bold">
+                {maintenanceCount}
+              </h2>
             </div>
 
-            <div className="bg-red-100 text-red-700 shadow-md rounded-2xl p-4 text-center">
+            <div className="bg-red-100 shadow rounded-2xl p-4 text-center">
               <p>Out</p>
-              <h2 className="text-2xl font-bold">{outOfServiceCount}</h2>
+              <h2 className="text-2xl font-bold">
+                {outOfServiceCount}
+              </h2>
             </div>
 
-            <div className="bg-orange-100 text-orange-700 shadow-md rounded-2xl p-4 text-center">
+            <div className="bg-red-200 shadow rounded-2xl p-4 text-center">
               <p>Overdue</p>
-              <h2 className="text-2xl font-bold">{overdueCount}</h2>
+              <h2 className="text-2xl font-bold">
+                {overdueCount}
+              </h2>
             </div>
 
-            <div className="bg-blue-100 text-blue-700 shadow-md rounded-2xl p-4 text-center">
+            <div className="bg-orange-100 shadow rounded-2xl p-4 text-center">
               <p>Due Soon</p>
-              <h2 className="text-2xl font-bold">{dueSoonCount}</h2>
+              <h2 className="text-2xl font-bold">
+                {dueSoonCount}
+              </h2>
             </div>
 
           </div>
 
-          {/* 🔍 Search */}
-          <input
-            className="mt-6 p-3 rounded-xl border shadow w-full"
-            placeholder="Search equipment..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          {/* 👨‍💼 ADMIN ONLY FORM */}
+          {user?.role === "Admin" && (
 
-          {/* ➕ Form */}
-          <div className="bg-white shadow-md rounded-2xl p-6 mt-6">
+            <div className="bg-white shadow-md rounded-2xl p-6 mt-6">
 
-            <h2 className="text-xl font-bold text-gray-700 mb-4">
-              {editId ? "Update Equipment" : "Add Equipment"}
-            </h2>
+              <h2 className="text-2xl font-bold mb-4">
 
-            <div className="space-y-4">
+                {editId
+                  ? "Update Equipment"
+                  : "Add Equipment"}
 
-              <input
-                className="p-3 border rounded-xl w-full"
-                placeholder="Equipment Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+              </h2>
 
-              <select
-                className="p-3 border rounded-xl w-full"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option>Active</option>
-                <option>Under Maintenance</option>
-                <option>Out of Service</option>
-              </select>
+              <div className="space-y-4">
 
-              <input
-                type="date"
-                className="p-3 border rounded-xl w-full"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
+                <input
+                  className="p-3 border rounded-xl w-full"
+                  placeholder="Equipment Name"
+                  value={name}
+                  onChange={(e) =>
+                    setName(
+                      e.target.value
+                    )
+                  }
+                />
 
-              <button
-                className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl shadow transition"
-                onClick={handleSave}
-                disabled={!name}
-              >
-                {editId ? "Update Equipment" : "Add Equipment"}
-              </button>
+                <input
+                  className="p-3 border rounded-xl w-full"
+                  placeholder="Location"
+                  value={location}
+                  onChange={(e) =>
+                    setLocation(
+                      e.target.value
+                    )
+                  }
+                />
+
+                <input
+                  className="p-3 border rounded-xl w-full"
+                  placeholder="Department"
+                  value={department}
+                  onChange={(e) =>
+                    setDepartment(
+                      e.target.value
+                    )
+                  }
+                />
+
+                <input
+                  className="p-3 border rounded-xl w-full"
+                  placeholder="Asset Tag"
+                  value={assetTag}
+                  onChange={(e) =>
+                    setAssetTag(
+                      e.target.value
+                    )
+                  }
+                />
+
+                <select
+                  className="p-3 border rounded-xl w-full"
+                  value={status}
+                  onChange={(e) =>
+                    setStatus(
+                      e.target.value
+                    )
+                  }
+                >
+
+                  <option>
+                    Active
+                  </option>
+
+                  <option>
+                    Under Maintenance
+                  </option>
+
+                  <option>
+                    Out of Service
+                  </option>
+
+                </select>
+
+                <input
+                  type="date"
+                  className="p-3 border rounded-xl w-full"
+                  value={date}
+                  onChange={(e) =>
+                    setDate(
+                      e.target.value
+                    )
+                  }
+                />
+
+                <button
+                  className="bg-green-500 hover:bg-green-600 text-white w-full py-3 rounded-xl transition"
+                  onClick={handleSave}
+                >
+
+                  {editId
+                    ? "Update Equipment"
+                    : "Add Equipment"}
+
+                </button>
+
+              </div>
 
             </div>
-          </div>
+
+          )}
+
         </div>
 
-        {/* RIGHT PANEL */}
+        {/* RIGHT */}
         <div>
 
-          <h2 className="text-2xl font-bold text-gray-700 mb-4">
-            Equipment List
-          </h2>
+          {/* 🔍 SEARCH + FILTER */}
+          <div className="flex gap-3 mb-5">
 
-          <div className="space-y-5">
-
-            {equipment.length === 0 ? (
-              <div className="bg-white shadow rounded-2xl p-6 text-center text-gray-500">
-                No equipment found
-              </div>
-            ) : (
-              equipment
-                .filter((item) =>
-                  item.equipmentName
-                    .toLowerCase()
-                    .includes(search.toLowerCase())
+            <input
+              className="p-3 border rounded-xl w-full"
+              placeholder="Search equipment..."
+              value={search}
+              onChange={(e) =>
+                setSearch(
+                  e.target.value
                 )
-                .map((item) => (
-                  <div
-                    key={item._id}
-                    className={`bg-white shadow-md rounded-2xl p-5 border-l-4 hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ${
-                      isOverdue(item.nextMaintenanceDate)
-                        ? "border-red-500"
-                        : item.status === "Under Maintenance"
-                        ? "border-yellow-500"
-                        : item.status === "Out of Service"
-                        ? "border-red-500"
-                        : "border-green-500"
-                    }`}
-                  >
+              }
+            />
 
-                    {/* Name */}
-                    <h3 className="text-2xl font-bold text-gray-800">
-                      {item.equipmentName}
-                    </h3>
+            <select
+              className="p-3 border rounded-xl"
+              value={filterStatus}
+              onChange={(e) =>
+                setFilterStatus(
+                  e.target.value
+                )
+              }
+            >
 
-                    {/* Status */}
-                    <p className="mt-2 text-sm font-medium">
-                      Status:{" "}
-                      <span
-                        className={`${
-                          item.status === "Active"
-                            ? "text-green-600"
-                            : item.status === "Under Maintenance"
-                            ? "text-yellow-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {item.status}
-                      </span>
-                    </p>
+              <option>
+                All
+              </option>
 
-                    {/* Date */}
-                    <p className="mt-2 text-gray-600">
-                      📅 Next:{" "}
-                      {item.nextMaintenanceDate
-                        ? item.nextMaintenanceDate.split("T")[0]
-                        : "Not set"}
-                    </p>
+              <option>
+                Active
+              </option>
 
-                    {/* Alerts */}
-                    {isOverdue(item.nextMaintenanceDate) && (
-                      <p className="text-red-500 font-semibold mt-2">
-                        🔴 Overdue!
-                      </p>
-                    )}
+              <option>
+                Under Maintenance
+              </option>
 
-                    {!isOverdue(item.nextMaintenanceDate) &&
-                      isDueSoon(item.nextMaintenanceDate) && (
-                        <p className="text-orange-500 font-semibold mt-2">
-                          🟠 Due Soon (within 3 days)
-                        </p>
-                      )}
+              <option>
+                Out of Service
+              </option>
 
-                    {/* Buttons */}
-                    <div className="flex gap-3 mt-5">
-
-                      <button
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl transition"
-                        onClick={() => handleEdit(item)}
-                      >
-                        Edit
-                      </button>
-
-                      <button
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl transition"
-                        onClick={() => handleDelete(item._id)}
-                      >
-                        Delete
-                      </button>
-
-                    </div>
-                  </div>
-                ))
-            )}
+            </select>
 
           </div>
+
+          {/* 📋 LIST */}
+          <div className="space-y-4">
+
+            {filteredEquipment.map((item) => (
+
+              <div
+                key={item._id}
+                className="bg-white shadow-md rounded-2xl p-5 border-l-4 border-green-500"
+              >
+
+                <h2 className="text-2xl font-bold">
+                  {item.name}
+                </h2>
+
+                <p className="mt-2">
+                  📍 {item.location}
+                </p>
+
+                <p>
+                  🏢 {item.department}
+                </p>
+
+                <p>
+                  🏷 {item.assetTag}
+                </p>
+
+                <p className="mt-2">
+
+                  Status:
+                  <strong>
+                    {" "}
+                    {item.status}
+                  </strong>
+
+                </p>
+
+                <p>
+
+                  📅 Last Serviced:
+
+                  {" "}
+
+                  {item.lastServiced
+                    ? item.lastServiced.split("T")[0]
+                    : "N/A"}
+
+                </p>
+
+                {isOverdue(
+                  item.lastServiced
+                ) && (
+
+                  <p className="text-red-500 font-bold mt-2">
+                    🔴 Overdue
+                  </p>
+
+                )}
+
+                {!isOverdue(
+                  item.lastServiced
+                ) &&
+
+                  isDueSoon(
+                    item.lastServiced
+                  ) && (
+
+                    <p className="text-orange-500 font-bold mt-2">
+                      🟠 Due Soon
+                    </p>
+
+                  )}
+
+                {/* 👨‍💼 ADMIN ONLY BUTTONS */}
+                {user?.role === "Admin" && (
+
+                  <div className="flex gap-3 mt-5">
+
+                    <button
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-xl"
+                      onClick={() =>
+                        handleEdit(item)
+                      }
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl"
+                      onClick={() =>
+                        handleDelete(
+                          item._id
+                        )
+                      }
+                    >
+                      Delete
+                    </button>
+
+                  </div>
+
+                )}
+
+              </div>
+
+            ))}
+
+          </div>
+
         </div>
 
       </div>
+
+      {/* 🔔 TOAST */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+      />
+
     </div>
   );
 }

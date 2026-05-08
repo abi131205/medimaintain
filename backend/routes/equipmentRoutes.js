@@ -1,25 +1,38 @@
-const express = require('express');
+const express = require("express");
+
 const router = express.Router();
 
-const equipmentController = require('../controllers/equipmentController');
-const { protect } = require('../middleware/authMiddleware');
+const equipmentController = require("../controllers/equipmentController");
 
-// ✅ Protect all routes
-// router.use(protect);
+const { protect } = require("../middleware/authMiddleware");
 
-// ➕ Create
-router.post('/', equipmentController.createEquipment);
+const authorizeRoles = require("../middleware/authorizeRoles");
 
-// 📥 Get all
-router.get('/', equipmentController.getAllEquipment);
+// 🔐 Protect all routes
+router.use(protect);
 
-// 📄 Get one
-router.get('/:id', equipmentController.getEquipmentById);
+// 📥 Everyone can view
+router.get("/", equipmentController.getAllEquipment);
 
-// ✏️ Update
-router.put('/:id', equipmentController.updateEquipment);
+router.get("/:id", equipmentController.getEquipmentById);
 
-// ❌ Delete
-router.delete('/:id', equipmentController.deleteEquipment);
+// 👨‍💼 ADMIN ONLY
+router.post(
+  "/",
+  authorizeRoles("Admin"),
+  equipmentController.createEquipment
+);
+
+router.put(
+  "/:id",
+  authorizeRoles("Admin"),
+  equipmentController.updateEquipment
+);
+
+router.delete(
+  "/:id",
+  authorizeRoles("Admin"),
+  equipmentController.deleteEquipment
+);
 
 module.exports = router;
