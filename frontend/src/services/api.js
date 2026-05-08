@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://medimaintain.onrender.com",
+  baseURL: "https://medimaintain.onrender.com/apiS",
 });
 
 // 🔐 Attach token automatically

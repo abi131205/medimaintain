@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../services/api";
 
 function Login({ setIsLoggedIn }) {
 
@@ -10,8 +10,8 @@ function Login({ setIsLoggedIn }) {
 
     try {
 
-      const res = await axios.post(
-        "http://localhost:5000/api/auth/login",
+      const res = await API.post(
+        "/auth/login",
         {
           email,
           password,
@@ -20,10 +20,11 @@ function Login({ setIsLoggedIn }) {
 
       console.log(res.data);
 
-      // ✅ Save token
-      localStorage.setItem("token", res.data.token);
+      localStorage.setItem(
+        "token",
+        res.data.token
+      );
 
-      // ✅ Save user
       localStorage.setItem(
         "user",
         JSON.stringify(res.data.user)
@@ -31,7 +32,6 @@ function Login({ setIsLoggedIn }) {
 
       alert("Login successful");
 
-      // ✅ Update login state
       setIsLoggedIn(true);
 
     } catch (err) {
@@ -39,7 +39,8 @@ function Login({ setIsLoggedIn }) {
       console.log(err);
 
       alert(
-        err.response?.data?.message || "Login failed"
+        err.response?.data?.message ||
+        "Login failed"
       );
     }
   };
