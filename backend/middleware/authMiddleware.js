@@ -1,23 +1,43 @@
 const jwt = require("jsonwebtoken");
 
-const protect = (req, res, next) => {
+const protect = (
+  req,
+  res,
+  next
+) => {
+
   try {
-    const token = req.headers.authorization;
+
+    const token =
+      req.headers.authorization;
 
     if (!token) {
-      return res.status(401).json({ message: "No token provided" });
+
+      return res.status(401).json({
+        message: "No token provided"
+      });
     }
 
-    const cleanToken = token.replace("Bearer ", "");
+    const cleanToken =
+      token.replace("Bearer ", "");
 
-    const decoded = jwt.verify(cleanToken, "SECRET_KEY");
+    const decoded = jwt.verify(
+      cleanToken,
+      process.env.JWT_SECRET
+    );
 
     req.user = decoded;
 
     next();
+
   } catch (error) {
-    res.status(401).json({ message: "Invalid token" });
+
+    res.status(401).json({
+      message: "Invalid token"
+    });
   }
 };
 
-module.exports = { protect };
+module.exports = {
+  protect
+};
