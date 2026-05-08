@@ -31,7 +31,7 @@ function App() {
   // 👤 Current User
   const user = JSON.parse(localStorage.getItem("user"));
 
-  const API = "http://localhost:5000/api/equipment";
+  const API = "https://medimaintain.onrender.com/api/equipment";
 
   // 🔐 AUTH HEADER
   const getAuthHeader = () => ({
