@@ -1,16 +1,16 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const equipmentSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'Equipment name is required'],
+      required: [true, "Equipment name is required"],
       trim: true,
     },
 
     assetTag: {
       type: String,
-      required: [true, 'Asset tag is required'],
+      required: [true, "Asset tag is required"],
       unique: true,
       uppercase: true,
       trim: true,
@@ -18,8 +18,14 @@ const equipmentSchema = new mongoose.Schema(
 
     category: {
       type: String,
-      enum: ['Diagnostic', 'Therapeutic', 'Monitoring', 'Lab', 'Other'],
-      default: 'Other',
+      enum: [
+        "Diagnostic",
+        "Therapeutic",
+        "Monitoring",
+        "Lab",
+        "Other",
+      ],
+      default: "Other",
     },
 
     department: {
@@ -44,8 +50,16 @@ const equipmentSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ['Active', 'Under Maintenance', 'Retired'],
-      default: 'Active',
+      enum: [
+        "Active",
+        "Under Maintenance",
+        "Out of Service",
+      ],
+      default: "Active",
+    },
+
+    lastServiced: {
+      type: Date,
     },
 
     notes: {
@@ -54,10 +68,13 @@ const equipmentSchema = new mongoose.Schema(
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Equipment', equipmentSchema);
+module.exports = mongoose.model(
+  "Equipment",
+  equipmentSchema
+);
