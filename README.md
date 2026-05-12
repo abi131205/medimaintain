@@ -6,6 +6,18 @@ The project focuses on creating a centralized digital solution where biomedical 
 
 ---
 
+# 🌐 Live Deployment
+
+## Frontend (Vercel)
+
+https://medimaintain.vercel.app
+
+## Backend API (Render)
+
+https://medimaintain.onrender.com
+
+---
+
 # 📌 Project Overview
 
 Medical equipment management in many healthcare environments is still handled manually or through scattered systems. This creates issues such as:
@@ -37,8 +49,23 @@ MediMaintain solves these problems by providing a modern web-based management sy
 ## 🔐 Authentication System
 
 * Secure login and registration
-* Protected routes using authentication middleware
-* User-based access control
+* JWT-based authentication
+* Protected routes using middleware
+* User-based role access control
+
+## 👨‍💼 Admin Features
+
+* Add equipment
+* Edit equipment
+* Delete equipment
+* Monitor equipment dashboard
+* Manage biomedical records
+
+## 👨‍🔧 Technician Features
+
+* View equipment details
+* Monitor maintenance status
+* Track biomedical equipment condition
 
 ## 🏥 Equipment Management
 
@@ -58,6 +85,7 @@ MediMaintain solves these problems by providing a modern web-based management sy
 ## 📊 Dashboard & Monitoring
 
 * Equipment overview dashboard
+* Equipment statistics cards
 * Status tracking
 * Service monitoring
 * Maintenance insights
@@ -70,14 +98,27 @@ MediMaintain solves these problems by providing a modern web-based management sy
 
 ---
 
+# 🎨 UI Highlights
+
+* Modern glassmorphism login UI
+* Gradient-based responsive design
+* Interactive dashboard cards
+* Color-coded equipment status badges
+* Smooth hover animations
+* Responsive modern layout
+
+---
+
 # 🧠 Technologies Used
 
 ## Frontend
 
 * React.js
+* Tailwind CSS
 * HTML5
 * CSS3
 * JavaScript
+* Axios
 
 ## Backend
 
@@ -89,23 +130,30 @@ MediMaintain solves these problems by providing a modern web-based management sy
 * MongoDB
 * Mongoose
 
+## Authentication & Security
+
+* JWT Authentication
+* bcryptjs
+
 ## Tools & Platforms
 
 * VS Code
 * Git & GitHub
-* Postman
+* Thunder Client
 * MongoDB Atlas
+* Vercel
+* Render
 
 ---
 
 # 🏗️ System Architecture
 
 ```text
-Frontend (React)
-       ↓
-Backend API (Node.js + Express)
-       ↓
-MongoDB Database
+Frontend (React + Tailwind CSS)
+              ↓
+Backend API (Node.js + Express.js)
+              ↓
+MongoDB Database (MongoDB Atlas)
 ```
 
 ---
@@ -120,7 +168,7 @@ MediMaintain/
 │   ├── middleware/
 │   ├── models/
 │   ├── routes/
-│   ├── config/
+│   ├── .env
 │   └── server.js
 │
 ├── frontend/
@@ -136,25 +184,29 @@ MediMaintain/
 
 # 🚀 Current Development Progress
 
-Currently working on:
+## ✅ Completed Features
 
-* Backend API development
-* Equipment CRUD operations
-* Authentication middleware
+* Full-stack MERN setup
+* Authentication system
+* JWT token protection
 * MongoDB integration
-* Route protection
-* Dashboard improvements
-* UI enhancements
-* Maintenance management modules
+* Equipment CRUD operations
+* Admin & Technician roles
+* Dashboard UI
+* Search & filtering
+* Equipment status management
+* Cloud deployment
+* Responsive frontend design
 
-Future improvements planned:
+## 🔮 Future Improvements
 
 * AI-based predictive maintenance
 * Notification system
 * Equipment analytics dashboard
 * QR code integration
-* Cloud deployment
 * Report generation system
+* Maintenance reminders
+* Mobile application support
 
 ---
 
@@ -163,36 +215,29 @@ Future improvements planned:
 ## 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/MediMaintain.git
+git clone https://github.com/abi131205/medimaintain.git
 ```
 
 ## 2️⃣ Navigate to the Project Folder
 
 ```bash
-cd MediMaintain
+cd medimaintain
 ```
 
-## 3️⃣ Install Dependencies
+---
 
-### Backend
+# 🔧 Backend Setup
+
+## Install Backend Dependencies
 
 ```bash
 cd backend
 npm install
 ```
 
-### Frontend
+## Create `.env` File
 
-```bash
-cd frontend
-npm install
-```
-
----
-
-# 🔑 Environment Variables
-
-Create a `.env` file inside the backend folder.
+Create a `.env` file inside backend folder.
 
 ```env
 PORT=5000
@@ -202,12 +247,29 @@ JWT_SECRET=your_secret_key
 
 ---
 
+# 💻 Frontend Setup
+
+## Install Frontend Dependencies
+
+```bash
+cd frontend
+npm install
+```
+
+---
+
 # ▶️ Running the Project
 
 ## Start Backend
 
 ```bash
-npm run server
+npm start
+```
+
+Backend runs on:
+
+```text
+http://localhost:5000
 ```
 
 ## Start Frontend
@@ -216,34 +278,106 @@ npm run server
 npm start
 ```
 
+Frontend runs on:
+
+```text
+http://localhost:3000
+```
+
+---
+
+# 👨‍🏫 How Staff or Faculty Can View the Project
+
+## 🌐 Option 1 — Live Project
+
+Open:
+
+```text
+https://medimaintain.vercel.app
+```
+
+Login using the provided demo credentials.
+
+---
+
+## 💻 Option 2 — Run Locally
+
+### Requirements
+
+Install:
+
+* Node.js
+* MongoDB
+* VS Code
+
+### Steps
+
+1. Clone repository
+2. Install dependencies
+3. Configure `.env`
+4. Run backend
+5. Run frontend
+
+---
+
+# 🔑 Demo Login Credentials
+
+## 👑 Admin Login
+
+```text
+Email: admin@test.com
+Password: admin123
+```
+
+## 👨‍🔧 Technician Login
+
+```text
+Email: abi@test.com
+Password: 123456
+```
+
 ---
 
 # 📸 Screenshots
 
-You can add screenshots here later.
+## Login Page
 
-Example:
+* Glassmorphism UI
+* Gradient background
+* Responsive login card
 
-```md
-![Dashboard Screenshot](images/dashboard.png)
-```
+## Dashboard
+
+* Equipment statistics
+* Equipment cards
+* Search & filtering
+* Interactive status badges
+
+## Equipment Management
+
+* Add equipment
+* Edit equipment
+* Delete equipment
+* Equipment status monitoring
 
 ---
 
 # 🧪 API Testing
 
-API endpoints are tested using:
+API endpoints tested using:
 
-* Postman
 * Thunder Client
+* Browser testing
 
-Example routes:
+## Example Routes
 
 ```http
 GET /api/equipment
 POST /api/equipment
 PUT /api/equipment/:id
 DELETE /api/equipment/:id
+POST /api/auth/login
+POST /api/auth/register
 ```
 
 ---
@@ -253,7 +387,8 @@ DELETE /api/equipment/:id
 * JWT Authentication
 * Protected API Routes
 * Middleware-based authorization
-* Secure database communication
+* Secure password hashing using bcryptjs
+* Token-based session handling
 
 ---
 
@@ -265,3 +400,30 @@ DELETE /api/equipment/:id
 * Multi-user management system
 * Cloud-based equipment analytics
 * Mobile application support
+* Maintenance scheduling alerts
+* PDF report generation
+
+---
+
+# 📚 Academic Purpose
+
+This project was developed as part of biomedical engineering and healthcare technology learning, focusing on:
+
+* Biomedical Equipment Management
+* Full Stack Web Development
+* Healthcare Digital Systems
+* MERN Stack Development
+
+---
+
+# 👨‍💻 Developer
+
+**Abijith U K**  
+B.Tech Computer Science & Medical Engineering  
+Sri Ramachandra Institute
+
+---
+
+# ⭐ GitHub Repository
+
+https://github.com/abi131205/medimaintain
